@@ -1,0 +1,116 @@
+\documentclass[a4paper]{article}
+
+%use the english line for english reports
+%usepackage[english]{babel}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{indentfirst}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{url}
+
+
+\begin{document}
+
+\setlength{\textwidth}{16cm}
+\setlength{\textheight}{22cm}
+
+\title{\Huge\textbf{Título do Trabalho}\linebreak\linebreak\linebreak
+\Large\textbf{Relatório Final}\linebreak\linebreak
+\linebreak\linebreak
+\includegraphics[scale=0.1]{feup-logo.png}\linebreak\linebreak
+\linebreak\linebreak
+\Large{Mestrado Integrado em Engenharia Informática e Computação} \linebreak\linebreak
+\Large{Programação em Lógica}\linebreak
+}
+
+\author{\textbf{Grupo xx:}\\ Nome 1 - Número 1 \\ Nome 2 - Número 2 \\\linebreak\linebreak \\
+ \\ Faculdade de Engenharia da Universidade do Porto \\ Rua Roberto Frias, s\/n, 4200-465 Porto, Portugal \linebreak\linebreak\linebreak
+\linebreak\linebreak\vspace{1cm}}
+%\date{Junho de 2007}
+\maketitle
+\thispagestyle{empty}
+
+%************************************************************************************************
+%************************************************************************************************
+
+\newpage
+
+\section*{Resumo}
+Resumo do trabalho (aprox. 250 palavras) descrevendo sucintamente o problema abordado, objetivos, metodologia usada na sua resolução, principais resultados e conclusões).
+
+\newpage
+
+%\tableofcontents
+
+%************************************************************************************************
+%************************************************************************************************
+
+%*************************************************************************************************
+%************************************************************************************************
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Introdução}
+
+Descrever os objetivos e motivação do trabalho. Descrever num parágrafo breve a estrutura do relatório.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{O Jogo XXX}
+
+Descrever sucintamente o jogo, a sua história e, principalmente, as suas regras. Devem ser incluídas imagens apropriadas para explicar o funcionamento do jogo \cite{CodigoSite}. (Pode ser idêntico ao texto do relatório intercalar.)
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Lógica do Jogo}
+
+Descrever o projeto e implementação da lógica do jogo em Prolog, incluindo a forma de representação do estado do tabuleiro e sua visualização, execução de movimentos, verificação do cumprimento das regras do jogo, determinação do final do jogo e cálculo das jogadas a realizar pelo computador utilizando diversos níveis de jogo. Sugere-se a estruturação desta secção da seguinte forma:
+
+\subsection{Representação do Estado do Jogo} 
+Pode ser idêntico ao descrito no relatório intercalar.)
+
+
+\subsection{Visualização do Tabuleiro} 
+Descrever a interface com o utilizador, descrevendo a visualização do estado do jogo (pode ser idêntico ao descrito no relatório intercalar) e robustez da interface/validações de entrada.
+
+
+\subsection{Lista de Jogadas Válidas} 
+Obtenção de uma lista de jogadas possíveis. O predicado deve chamar-se \textit{valid\_moves(+Board, +Player, -ListOfMoves)}.
+
+
+\subsection{Execução de Jogadas} 
+Validação e execução de uma jogada num tabuleiro, obtendo o novo estado do jogo. O predicado deve chamar-se \textit{move(+Move, +Board, -NewBoard)}.
+
+
+\subsection{Final do Jogo} 
+Verificação do fim do jogo, com identificação do vencedor. O predicado deve chamar-se \textit{game\_over(+Board, -Winner)}.
+
+
+\subsection{Avaliação do Tabuleiro}
+Avaliação do estado do jogo, que permitirá comparar a aplicação das diversas jogadas disponíveis. O predicado deve chamar-se \textit{value(+Board, +Player, -Value)}.
+
+
+\subsection{Jogada do Computador} 
+Escolha da jogada a efetuar pelo computador, dependendo do nível de dificuldade. O predicado deve chamar-se \textit{choose\_move(+Board, +Level, -Move)}.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Conclusões}
+Que conclui deste projecto? Como poderia melhorar o trabalho desenvolvido?
+
+
+\clearpage
+%\addcontentsline{toc}{section}{Bibliografia}
+\renewcommand\refname{Bibliografia}
+\bibliographystyle{apalike}
+\bibliography{myrefs}
+
+\newpage
+\appendix
+\section{Nome do Anexo}
+Outros elementos úteis que não sejam essenciais ao relatório.
+
+\end{document}

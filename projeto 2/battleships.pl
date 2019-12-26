@@ -136,10 +136,16 @@ battleships(ID, Vars):-
     Cx #=< 10, Cy #=< 10,
     Bx #=< 10, By #=< 10,
     Ax #=< 10, Ay #=< 10,
+
+    % break symmetries with ships of same size
+    lex_chain([[Dx,Dy],[Cx,Cy],[Bx,By],[Ax,Ay]], [op(#<),global(true)]),
+    lex_chain([[Gx,Gy],[Fx,Fy],[Ex,Ey]], [op(#<),global(true)]),
+    lex_chain([[Ix,Iy],[Hx,Hy]], [op(#<),global(true)]),
+
     disjoint2(Ships),
+    !,
     % constrain ships and their size
     constrainShips(Vars, Ships),
-    append(StartsX,StartsY, Starts),
-    labeling([bisect], Starts),
+    labeling([], Vars),
     printBoard(Board, PerRowData, PerColumnData).
     

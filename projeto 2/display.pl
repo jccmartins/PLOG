@@ -14,23 +14,21 @@ initialBoard([
 symbol(0,S) :- S=' '. %water
 symbol(1,S) :- S='$'. %ship
 
-printBoard(Board) :-
+printBoard(Board, PerRowData, PerColumnData) :-
     nl,
     write('---|---|---|---|---|---|---|---|---|---|\n'),
-    data(_,PerRowData, _),
-    printMatrix(Board, 1, PerRowData).
+    printMatrix(Board, 1, PerRowData, PerColumnData).
 
-printMatrix([], 11, _):- 
-    data(_,_,PerColumnData),
+printMatrix([], 11, _, PerColumnData):- 
     printList(PerColumnData),
     write('\n').
 
-printMatrix([Head|Tail], N, [H|T]) :-
+printMatrix([Head|Tail], N, [H|T], PerColumnData) :-
     N1 is N + 1,
     write(' '),
     printLine(Head, H),
     write('\n---|---|---|---|---|---|---|---|---|---|\n'),
-    printMatrix(Tail, N1, T).
+    printMatrix(Tail, N1, T, PerColumnData).
 
 printLine([], H) :-
     format('~w', [H]).

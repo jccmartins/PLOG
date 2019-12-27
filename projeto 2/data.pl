@@ -1,5 +1,19 @@
-/* data(ID, Initial Info (List of [[Row,Column], 0 for water OR 1 for ship]), Per Row Data, Per Column Data) */
-data(id1, [  ],
+/* 
+data(ID, 
+     Initial Info
+          [ [[Row,Column], Piece type], ...)
+               Ship Piece Type can be:
+                    north -> northernmost piece
+                    east -> rightmost piece
+                    west -> leftmost piece
+                    south -> southernmost piece
+                    single -> ship with only one piece; no ship pieces around it
+                    water
+     , 
+     Per Row Data, 
+     Per Column Data) 
+*/
+data(id1, [ [[7,5], east], [[5,5], water], [[7,1], water] ],
     [4,1,3,0,3,0,4,0,2,3],
     [1,4,1,0,4,4,1,3,1,1]).
 

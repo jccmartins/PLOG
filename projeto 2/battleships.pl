@@ -5,12 +5,56 @@
 :-consult('data.pl').
 :-consult('utils.pl').
 
+/* constrain cell value */
+constrainCell(_,0,_,0).
+constrainCell(_,_,0,0).
+constrainCell(_,11,_,0).
+constrainCell(_,_,11,0).
+constrainCell(Vars, Row, Column, Value) :-
+    N is (Row-1)*10+Column,
+    nth1(N, Vars, Value).
+
+/* set margin of ship piece to 0 considering its type (north,east,west or single) */
+constrainMargin(Vars, Row, Column, ShipPiece) :-
+    TopRow is Row-1,
+    BottomRow is Row+1,
+    LeftColumn is Column-1,
+    RightColumn is Column+1,
+    (ShipPiece == single ->
+        constrainCell(Vars, TopRow, Column, 0),      
+        constrainCell(Vars, Row, LeftColumn, 0),    
+        constrainCell(Vars, Row, RightColumn, 0),    
+        constrainCell(Vars, BottomRow, Column, 0);
+    ShipPiece == north ->
+        constrainCell(Vars, TopRow, Column, 0),      
+        constrainCell(Vars, Row, LeftColumn, 0),    
+        constrainCell(Vars, Row, RightColumn, 0),    
+        constrainCell(Vars, BottomRow, Column, 1),
+    ShipPiece == east ->
+        constrainCell(Vars, TopRow, Column, 0),   
+        constrainCell(Vars, Row, LeftColumn, 1),
+        constrainCell(Vars, Row, RightColumn, 0),   
+        constrainCell(Vars, BottomRow, Column, 0);
+    ShipPiece == west ->
+        constrainCell(Vars, TopRow, Column, 0),      
+        constrainCell(Vars, Row, LeftColumn, 0),    
+        constrainCell(Vars, Row, RightColumn, 1),  
+        constrainCell(Vars, BottomRow, Column, 0); 
+    ShipPiece == south ->     
+        constrainCell(Vars, TopRow, Column, 1),
+        constrainCell(Vars, Row, LeftColumn, 0),    
+        constrainCell(Vars, Row, RightColumn, 0),    
+        constrainCell(Vars, BottomRow, Column, 0)).
+
 /* fills board with initial info */
 fillBoardWithInfo([], _).
 fillBoardWithInfo([H|T], Vars):-
-    [[Row, Column], Symbol] = H,
+    [[Row, Column], PieceType] = H,
     N is (Row-1)*10+Column,
-    nth1(N, Vars, Symbol),
+    (PieceType == water ->
+        nth1(N, Vars, 0);
+    nth1(N,Vars,1),    
+    constrainMargin(Vars, Row, Column, PieceType)),
     fillBoardWithInfo(T, Vars).
 
 /* constrain number of ship pieces there are in each row or column */

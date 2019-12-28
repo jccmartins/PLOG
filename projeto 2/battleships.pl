@@ -4,6 +4,7 @@
 :-consult('display.pl').
 :-consult('data.pl').
 :-consult('utils.pl').
+:-consult('statistics.pl').
 
 /* get or set cell value */
 cellValue(_,0,_,_,_,0).
@@ -184,6 +185,10 @@ battleships(ID, Vars):-
     
     % constrain ships and their size
     constrainShips(Vars, NColumns, Ships),
-    labeling([bisect], Vars),
+
+    reset_timer,
+	print_time,
+	fd_statistics,
+
     printBoard(Board, PerRowData, PerColumnData).
     

@@ -14,13 +14,13 @@ cellValue(Vars, Row, Column, _, NColumns, Value) :-
     N is (Row-1)*NColumns+Column,
     nth1(N, Vars, Value).
 
-/* set margin of ship piece to 0 considering its type (north,east,west or single) */
+/* set margin of ship piece to 0 considering its type (north,east,west or cricle) */
 constrainMargin(Vars, Row, Column, NRows, NColumns, ShipPiece) :-
     TopRow is Row-1,
     BottomRow is Row+1,
     LeftColumn is Column-1,
     RightColumn is Column+1,
-    (ShipPiece == single ->
+    (ShipPiece == circle ->
         cellValue(Vars, TopRow, Column, NRows, NColumns, 0),      
         cellValue(Vars, Row, LeftColumn, NRows, NColumns, 0),    
         cellValue(Vars, Row, RightColumn, NRows, NColumns, 0),    

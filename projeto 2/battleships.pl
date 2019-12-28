@@ -110,74 +110,67 @@ constrainDiagonals(Board, Line, Column) :-
     Value+BottomRight #=< 1,
     constrainDiagonals(Board, Line, RightColumn).
 
+/* creates list of ships with same size */
+createShipsGroup(_, [], [], []).
+createShipsGroup(SizeWithMargin, [X|XsTail], [Y|YsTail], ShipsGroup) :-
+    (SizeWithMargin \= 2 ->
+        Width in {2, SizeWithMargin},
+        Height in {2, SizeWithMargin},
+        Width #\= Height;
+    Width = 2,
+    Height = 2
+    ),
+    X+Width-2 #=< 10, 
+    Y+Height-2 #=< 10,
+    createShipsGroup(SizeWithMargin, XsTail, YsTail, AuxShipsGroup),
+    append([ship(X, Width, Y, Height)], AuxShipsGroup, ShipsGroup).
+
+/* creates list with starts with this format [[Ax,Ay], [Bx,By], ...] */
+groupStarts([],[],[]).
+groupStarts([X|XsTail], [Y|YsTail], Starts) :-
+    groupStarts(XsTail, YsTail, AuxStarts),
+    append([[X,Y]], AuxStarts, Starts).
+
+/* create ships */
+createShips([], []).
+createShips([Size-NumberOfShips|ShipsDataTail], Ships) :-
+    length(StartsX, NumberOfShips),
+    length(StartsY, NumberOfShips),
+    domain(StartsX, 1, 10),
+    domain(StartsY, 1, 10),
+    SizeWithMargin is Size+1,
+    createShipsGroup(SizeWithMargin, StartsX, StartsY, ShipsGroup),
+    groupStarts(StartsX, StartsY, Starts),
+    % break symmetries with ships of same size
+    lex_chain(Starts, [op(#<),global(true)]),
+    createShips(ShipsDataTail, AuxShips),
+    append(ShipsGroup, AuxShips, Ships).
+
+
 /* battleships */
 battleships(ID, Vars):-
     initialBoard(Board),
     matrixToList(Board, Vars),
     domain(Vars,0,1),
-    data(ID, InitialInfo, PerRowData, PerColumnData),
+    data(ID, InitialInfo, PerRowData, PerColumnData, ShipsData),
     fillBoardWithInfo(InitialInfo, Vars),
+    
     % constrain rows and columns number of ship segments 
     constrain(Board, PerRowData),
     transpose(Board, BoardTransposed, 0, 10),
     constrain(BoardTransposed, PerColumnData),
+    
     % constrain ships to be non-adjacent
     constrainDiagonals(Board, 1, 1),
+    
     % constrain ships and their size
-    StartsX = [Ax, Bx, Cx, Dx, Ex, Fx, Gx, Hx, Ix, Jx],
-    StartsY = [Ay, By, Cy, Dy, Ey, Fy, Gy, Hy, Iy, Jy], 
-    domain(StartsX, 1, 10),
-    domain(StartsY, 1, 10),
-    BattleshipWidth in {2,5},
-    BattleshipHeight in {2,5},
-    BattleshipWidth #\= BattleshipHeight,
-    CruiserOneWidth in {2,4},
-    CruiserOneHeight in {2,4},
-    CruiserOneWidth #\= CruiserOneHeight,
-    CruiserTwoWidth in {2,4},
-    CruiserTwoHeight in {2,4},
-    CruiserTwoWidth #\= CruiserTwoHeight,
-    DestroyerOneWidth in {2,3},
-    DestroyerOneHeight in {2,3},
-    DestroyerOneWidth #\= DestroyerOneHeight,
-    DestroyerTwoWidth in {2,3},
-    DestroyerTwoHeight in {2,3},
-    DestroyerTwoWidth #\= DestroyerTwoHeight,
-    DestroyerThreeWidth in {2,3},
-    DestroyerThreeHeight in {2,3},
-    DestroyerThreeWidth #\= DestroyerThreeHeight,
-    Ships = [
-        ship(Jx, BattleshipWidth, Jy, BattleshipHeight),
-        ship(Ix, CruiserOneWidth, Iy, CruiserOneHeight),
-        ship(Hx, CruiserTwoWidth, Hy, CruiserTwoHeight),
-        ship(Gx, DestroyerOneWidth, Gy, DestroyerOneHeight),
-        ship(Fx, DestroyerTwoWidth, Fy, DestroyerTwoHeight),
-        ship(Ex, DestroyerThreeWidth, Ey, DestroyerThreeHeight),
-        ship(Dx, 2, Dy, 2),
-        ship(Cx, 2, Cy, 2),
-        ship(Bx, 2, By, 2),
-        ship(Ax, 2, Ay, 2)
-    ],
-    Jx+BattleshipWidth-2 #=< 10, Jy+BattleshipHeight-2 #=< 10,
-    Ix+CruiserOneWidth-2 #=< 10, Iy+CruiserOneHeight-2 #=< 10,
-    Hx+CruiserTwoWidth-2 #=< 10, Hy+CruiserTwoHeight-2 #=< 10,
-    Gx+DestroyerOneWidth-2 #=< 10, Gy+DestroyerOneHeight-2 #=< 10,
-    Fx+DestroyerTwoWidth-2 #=< 10, Fy+DestroyerTwoHeight-2 #=< 10,
-    Ex+DestroyerThreeWidth-2 #=< 10, Ey+DestroyerThreeHeight-2 #=< 10,
-    Dx #=< 10, Dy #=< 10,
-    Cx #=< 10, Cy #=< 10,
-    Bx #=< 10, By #=< 10,
-    Ax #=< 10, Ay #=< 10,
-
-    % break symmetries with ships of same size
-    lex_chain([[Dx,Dy],[Cx,Cy],[Bx,By],[Ax,Ay]], [op(#<),global(true)]),
-    lex_chain([[Gx,Gy],[Fx,Fy],[Ex,Ey]], [op(#<),global(true)]),
-    lex_chain([[Ix,Iy],[Hx,Hy]], [op(#<),global(true)]),
+    createShips(ShipsData, Ships),
 
     disjoint2(Ships),
     !,
+    
     % constrain ships and their size
     constrainShips(Vars, Ships),
-    labeling([], Vars),
+    labeling([bisect], Vars),
     printBoard(Board, PerRowData, PerColumnData).
     

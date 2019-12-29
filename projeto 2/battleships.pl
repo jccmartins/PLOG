@@ -65,10 +65,14 @@ fillVarsWithInfo([H|T], NRows, NColumns, Vars):-
     fillVarsWithInfo(T, NRows, NColumns, Vars).
 
 /* constrain number of ship pieces there are in each row or column */
-constrain([], []).
-constrain([H|T], [Constraint|ConstraintsTail]) :-
-    global_cardinality(H, [1-Constraint,0-_]),
-    constrain(T, ConstraintsTail).
+constrain([], [], _).
+constrain([H|T], [Constraint|ConstraintsTail], ShipsSize) :-
+    length(H, ListLength),
+    NumberOfZeros is ListLength-Constraint,
+    pairWithEmpty(ShipsSize, ShipsSizePairs),
+    append([0-NumberOfZeros], ShipsSizePairs, Cardinality),
+    global_cardinality(H, Cardinality),
+    constrain(T, ConstraintsTail, ShipsSize).
 
 /* constrain ships so there are the exact number of ships (with the respective size) on the board */
 constrainShips(_,_,[]).
@@ -156,13 +160,20 @@ createShips([Size-NumberOfShips|ShipsDataTail], NRows, NColumns, Ships) :-
     createShips(ShipsDataTail, NRows, NColumns, AuxShips),
     append(ShipsGroup, AuxShips, Ships).
 
-/* get Ships starts */
+/* get Ships starts
 getShipsStarts([],[]).
 getShipsStarts([Ship|ShipsTail], Starts) :-
     ship(X,_,Y,_) = Ship,
     getShipsStarts(ShipsTail, AuxStarts),
     append([X,Y], AuxStarts, Starts).
+*/
 
+/* get ships size */
+getShipsSize([],[]).
+getShipsSize([ShipPair|ShipsTail], ShipsSize) :-
+    ShipSize-_ = ShipPair,
+    getShipsSize(ShipsTail, AuxShipsSize),
+    append([ShipSize], AuxShipsSize, ShipsSize).
 
 /* battleships */
 battleships(ID, Vars):-
@@ -175,11 +186,13 @@ battleships(ID, Vars):-
     fillVarsWithInfo(InitialInfo, NRows, NColumns, Vars),
 
     list_to_matrix(Vars,NColumns,Board),
-    
+
+    % get all ships size to use to constrain number of ship fragments in each row/column
+    getShipsSize(ShipsData, ShipsSize),
     % constrain rows and columns number of ship segments 
-    constrain(Board, PerRowData),
+    constrain(Board, PerRowData, ShipsSize),
     transpose(Board, BoardTransposed, 0, NColumns),
-    constrain(BoardTransposed, PerColumnData),
+    constrain(BoardTransposed, PerColumnData, ShipsSize),
 
     % constrain ships to be non-adjacent
     constrainDiagonals(Vars, 1, 1, NRows, NColumns),

@@ -22,3 +22,9 @@ transpose(Matrix, MatrixTransposed, N, NColumns) :-
     transpose(Matrix, AuxMatrixTransposed, N1, NColumns),
     transposeList(Matrix, List, N1),
     append([List], AuxMatrixTransposed, MatrixTransposed).
+
+/* pair numbers from a list with empty atom */
+pairWithEmpty([],[]).
+pairWithEmpty([Number|NumbersTail], Pairs) :-
+    pairWithEmpty(NumbersTail, AuxPairs),
+    append([Number-_], AuxPairs, Pairs).

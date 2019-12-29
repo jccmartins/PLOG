@@ -1,5 +1,5 @@
 symbol(0,S) :- S=' '. %water
-symbol(1,S) :- S='$'. %ship
+symbol(1,S) :- S='#'. %ship
 
 printSeparator(0) :- write('\n').
 printSeparator(NColumns) :-

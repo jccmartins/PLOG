@@ -156,6 +156,13 @@ createShips([Size-NumberOfShips|ShipsDataTail], NRows, NColumns, Ships) :-
     createShips(ShipsDataTail, NRows, NColumns, AuxShips),
     append(ShipsGroup, AuxShips, Ships).
 
+/* get Ships starts */
+getShipsStarts([],[]).
+getShipsStarts([Ship|ShipsTail], Starts) :-
+    ship(X,_,Y,_) = Ship,
+    getShipsStarts(ShipsTail, AuxStarts),
+    append([X,Y], AuxStarts, Starts).
+
 
 /* battleships */
 battleships(ID, Vars):-

@@ -28,3 +28,15 @@ pairWithEmpty([],[]).
 pairWithEmpty([Number|NumbersTail], Pairs) :-
     pairWithEmpty(NumbersTail, AuxPairs),
     append([Number-_], AuxPairs, Pairs).
+
+/* get biggest number from a list */
+getMaxFromList([],Max,Max).
+getMaxFromList([H|T], AuxMax, Max) :-
+    (integer(AuxMax) ->
+      (H > AuxMax ->
+        NewAuxMax = H;
+      NewAuxMax = AuxMax);
+    NewAuxMax = H),
+    getMaxFromList(T, NewAuxMax, Max).
+
+

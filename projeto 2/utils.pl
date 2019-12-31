@@ -39,4 +39,9 @@ getMaxFromList([H|T], AuxMax, Max) :-
     NewAuxMax = H),
     getMaxFromList(T, NewAuxMax, Max).
 
+/* count occurrences of a element Symbol in a list */
+count(_,[],0).
+count(Symbol,[H|T],N) :- H == Symbol, count(Symbol, T, N1), N is N1 + 1.
+count(Symbol, [H|T],N) :- H \== Symbol, count(Symbol, T, N).
+
 

@@ -220,18 +220,69 @@ constrainRandom([H|T], [Constraint|ConstraintsTail], ShipsSize) :-
     global_cardinality(H, Cardinality),
     constrainRandom(T, ConstraintsTail, ShipsSize).
 
+/* constrain numbers so they are not adjacent on Rows and Columns data */
+constrainThreeEqualNumbersTogether(RowColumnData, N) :-
+    length(RowColumnData,Length),
+    Aux is Length-1,
+    N == Aux.
+
+constrainThreeEqualNumbersTogether(RowColumnData, N) :-
+    nth1(N,RowColumnData,Element),
+    N1 is N+1,
+    nth1(N1,RowColumnData,NextElement),
+    N2 is N+2,
+    nth1(N2,RowColumnData,NextNextElement),
+    Element #\= NextElement #\/ Element #\= NextNextElement #\/ NextElement #\= NextNextElement,
+    constrainThreeEqualNumbersTogether(RowColumnData,N1).
+
+/* constrain rows and columns cardinality */
+constrainRowsColumnsCardinality(-1,_,[]). 
+constrainRowsColumnsCardinality(MaxConstraintNumber, MaxCardinality, RowsCardinality) :-
+    Cardinality #=< MaxCardinality,
+    NextConstraintNumber is MaxConstraintNumber-1,
+    constrainRowsColumnsCardinality(NextConstraintNumber,MaxCardinality, AuxRowsCardinality),
+    append([MaxConstraintNumber-Cardinality],AuxRowsCardinality,RowsCardinality).
+
+
+/* get elements from board between rows InitialRow and FinalRow and columns InitialColumn and FinalColumn*/
+getElementsBetweenColumns(_,_,Column,FinalColumn,[]) :- Column > FinalColumn.
+getElementsBetweenColumns(Board,Row,Column,FinalColumn,Elements) :-
+    nth1(Row,Board,RowElements),
+    nth1(Column,RowElements,Element),
+    NextColumn is Column+1,
+    getElementsBetweenColumns(Board,Row,NextColumn,FinalColumn,AuxElements),
+    append([Element],AuxElements,Elements).
+
+getElementsBetween(_, Row, FinalRow,_,_,[]) :- Row > FinalRow.
+getElementsBetween(Board, Row, FinalRow, Column, FinalColumn, Elements) :-
+    getElementsBetweenColumns(Board,Row,Column,FinalColumn,RowElements),
+    NextRow is Row+1,
+    getElementsBetween(Board,NextRow,FinalRow,Column,FinalColumn,AuxElements),
+    append(RowElements,AuxElements,Elements).
+
 /* generates a random puzzle with NRows rows and NColumns columns
     ShipsData is a list with pairs of ship size and number of ships with that size
     example: [4-1,3-2,2-3,1-4], 1 ship with size 4, 2 ships with size 3 ...
 */
-randomPuzzle(NRows, NColumns, ShipsData, Vars) :-
+randomPuzzle(NRows, NColumns, Vars) :-
+    shipsData(NRows,NColumns,ShipsData),
     length(PerRowData, NRows),
     length(PerColumnData, NColumns),
-    domain(PerRowData,0,NRows),
-    domain(PerColumnData,0,NColumns),
+    MaxConstraintNumber is ceiling((NRows+1)/2),
+    domain(PerRowData,0,MaxConstraintNumber),
+    domain(PerColumnData,0,MaxConstraintNumber),
+    append(PerRowData,PerColumnData,RowColumnData),
     N is NRows*NColumns,
     length(Vars, N),
-    
+
+    constrainThreeEqualNumbersTogether(RowColumnData,1),
+
+    MaxCardinality is ceiling(NRows/5),
+    constrainRowsColumnsCardinality(MaxConstraintNumber, MaxCardinality, RowsCardinality),
+    constrainRowsColumnsCardinality(MaxConstraintNumber, MaxCardinality, ColumnsCardinality),
+    global_cardinality(PerRowData,RowsCardinality),
+    global_cardinality(PerColumnData,ColumnsCardinality),
+
     % get all ships size to use to constrain number of ship Pieces in each row/column
     getShipsSize(ShipsData, ShipsSize),
     % get biggest ship size
@@ -250,20 +301,66 @@ randomPuzzle(NRows, NColumns, ShipsData, Vars) :-
 
     % get a list with all pieces on the board
     getAllPieces(ShipsData, AllPieces),
+
+    length(AllPieces, TotalNumberOfPieces),
+
     getMaxFromList(AllPieces,_,GreaterPiece),
     getAllPiecesCardinality(GreaterPiece,AllPieces,PiecesCardinality),
     append([0-_],PiecesCardinality,Cardinality),
     % constrain ships size and number of Pieces on the board
     global_cardinality(Vars, Cardinality),
 
-    % constrain ship pieces of the same ship to be adjacent incrementally
-    % 1(size 1), 12(size 2), 123(size 3), 1234(size 4), ...
+
+    /* constrain pieces on each quadrant so pieces are more spread */
+    MiddleRows is floor(NRows/2),
+    MiddleColumns is floor(NColumns/2),
+    NextMiddleRows is MiddleRows+1,
+    NextMiddleColumns is MiddleColumns+1,
+
+    % get vars from quadrant 1, 2, 3 and 4
+    getElementsBetween(Board, 1, MiddleRows, 1, MiddleColumns, Q1),
+    getElementsBetween(Board, 1, MiddleRows, NextMiddleColumns, NColumns, Q2),
+    getElementsBetween(Board, NextMiddleRows, NRows, 1, MiddleColumns, Q3),
+    getElementsBetween(Board, NextMiddleRows, NRows, NextMiddleColumns, NColumns, Q4),
+
+    MinPiecesPerQuadrant is ceiling(TotalNumberOfPieces/5),
+    Max_Q1_zeros is MiddleRows*MiddleColumns-MinPiecesPerQuadrant,
+    Max_Q2_zeros is (NColumns-MiddleColumns)*MiddleRows-MinPiecesPerQuadrant,
+    Max_Q3_zeros is (NRows-MiddleRows)*MiddleColumns-MinPiecesPerQuadrant,
+    Max_Q4_zeros is (NRows-MiddleRows)*(NColumns-MiddleColumns)-MinPiecesPerQuadrant,
+
+    pairWithEmpty(ShipsSize, Q1_PiecesCardinality),
+    Q1_zeros #=< Max_Q1_zeros,
+    append([0-Q1_zeros],Q1_PiecesCardinality,Q1_Cardinality),
+    % constrain ships size and number of Pieces on the board
+    global_cardinality(Q1, Q1_Cardinality),
+
+    pairWithEmpty(ShipsSize, Q2_PiecesCardinality),
+    Q2_zeros #=< Max_Q2_zeros,
+    append([0-Q2_zeros],Q2_PiecesCardinality,Q2_Cardinality),
+    % constrain ships size and number of Pieces on the board
+    global_cardinality(Q2, Q2_Cardinality),
+
+    pairWithEmpty(ShipsSize, Q3_PiecesCardinality),
+    Q3_zeros #=< Max_Q3_zeros,
+    append([0-Q3_zeros],Q3_PiecesCardinality,Q3_Cardinality),
+    % constrain ships size and number of Pieces on the board
+    global_cardinality(Q3, Q3_Cardinality),
+
+    pairWithEmpty(ShipsSize, Q4_PiecesCardinality),
+    Q4_zeros #=< Max_Q4_zeros,
+    append([0-Q4_zeros],Q4_PiecesCardinality,Q4_Cardinality),
+    % constrain ships size and number of Pieces on the board
+    global_cardinality(Q4, Q4_Cardinality),
+
+    /* constrain ship pieces of the same ship to be adjacent incrementally
+    1(size 1), 12(size 2), 123(size 3), 1234(size 4), ... */
     constrainShipsPieces(Vars, 1, 0, NRows, NColumns),
     
     !,
 
     reset_timer,
-    labeling([],Vars),
+    labeling([bisect],Vars),
 	print_time,
 	fd_statistics,
 

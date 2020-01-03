@@ -200,7 +200,7 @@ battleships(ID, Vars):-
     !,
 
     reset_timer,
-    labeling([],Vars),
+    labeling([ff],Vars),
 	print_time,
 	fd_statistics,
 
@@ -360,7 +360,7 @@ randomPuzzle(NRows, NColumns, Vars) :-
     !,
 
     reset_timer,
-    labeling([bisect],Vars),
+    labeling([],Vars),
 	print_time,
 	fd_statistics,
 

@@ -1,0 +1,2 @@
+Para executar este programa é preciso consultar o ficheiro battleships.pl no sicstus e posteriormente chamar o predicado battleships/2. O primeiro argumento é o ID do puzzle e o segundo argumento é uma variável que vai ser instanciada como uma lista e vai conter o valor de todas as células do tabuleiro. Os puzzles e os seus IDs estão nos predicados data/5 no ficheiro data.pl
+Por exemplo, correr "battleships(id1,Vars).".
